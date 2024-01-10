@@ -12,7 +12,7 @@ secrets:
 
 services:
   backend:
-    image: ghcr.io/tilokowalski/tickets-backend:0.0.1-SNAPSHOT
+    image: ghcr.io/tilokowalski/tickets-backend:latest
     container_name: tickets-backend
     restart: unless-stopped
     secrets:
