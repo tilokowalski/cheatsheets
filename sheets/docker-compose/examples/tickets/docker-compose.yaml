@@ -1,31 +1,17 @@
 version: '3.8'
 
-secrets:
-  MYSQL_ROOT_PASSWORD:
-    file: .secrets/mysql_root_password.txt
-  MYSQL_DATABASE:
-    file: .secrets/mysql_database.txt
-  MYSQL_USER:
-    file: .secrets/mysql_user.txt
-  MYSQL_PASSWORD:
-    file: .secrets/mysql_password.txt
-
 services:
   backend:
     image: ghcr.io/tilokowalski/tickets-backend:latest
     container_name: tickets-backend
     restart: unless-stopped
-    secrets:
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
     environment:
       APP_LOG_LEVEL: info
       APP_PROFILE: prod
       APP_DB_HOST: tickets-db
-      APP_DB_NAME__FILE: /run/secrets/MYSQL_DATABASE
-      APP_DB_USER__FILE: /run/secrets/MYSQL_USER
-      APP_DB_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+      APP_DB_NAME: ${MYSQL_DATABASE}
+      APP_DB_USER: ${MYSQL_USER}
+      APP_DB_PASSWORD: ${MYSQL_PASSWORD}
     expose:
       - 8080
     networks:
@@ -38,16 +24,11 @@ services:
     image: jc21/mariadb-aria:latest
     container_name: tickets-db
     restart: unless-stopped
-    secrets:
-      - MYSQL_ROOT_PASSWORD
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
     environment:
-      MYSQL_ROOT_PASSWORD__FILE: /run/secrets/MYSQL_ROOT_PASSWORD
-      MYSQL_DATABASE__FILE: /run/secrets/MYSQL_DATABASE
-      MYSQL_USER__FILE: /run/secrets/MYSQL_USER
-      MYSQL_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
     expose:

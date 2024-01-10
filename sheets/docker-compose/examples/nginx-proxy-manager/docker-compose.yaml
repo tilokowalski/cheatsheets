@@ -1,33 +1,17 @@
 version: '3.8'
 
-# Create a '.secrets' directory with these files relative to this compose file to make use of the following secrets
-
-secrets:
-  MYSQL_ROOT_PASSWORD:
-    file: .secrets/mysql_root_password.txt
-  MYSQL_DATABASE:
-    file: .secrets/mysql_database.txt
-  MYSQL_USER:
-    file: .secrets/mysql_user.txt
-  MYSQL_PASSWORD:
-    file: .secrets/mysql_password.txt
-
 services:
   app:
     image: jc21/nginx-proxy-manager:latest
     privileged: true
     container_name: nginx-proxy-manager-app
     restart: unless-stopped
-    secrets:
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
     environment:
       DB_MYSQL_HOST: nginx-proxy-manager-db
       DB_MYSQL_PORT: 3306
-      DB_MYSQL_NAME__FILE: /run/secrets/MYSQL_DATABASE
-      DB_MYSQL_USER__FILE: /run/secrets/MYSQL_USER
-      DB_MYSQL_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+      DB_MYSQL_NAME: ${MYSQL_DATABASE}
+      DB_MYSQL_USER: ${MYSQL_USER}
+      DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - app_data:/data
       - letsencrypt_data:/etc/letsencrypt
@@ -51,16 +35,11 @@ services:
     image: jc21/mariadb-aria:latest
     container_name: nginx-proxy-manager-db
     restart: unless-stopped
-    secrets:
-      - MYSQL_ROOT_PASSWORD
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
     environment:
-      MYSQL_ROOT_PASSWORD__FILE: /run/secrets/MYSQL_ROOT_PASSWORD
-      MYSQL_DATABASE__FILE: /run/secrets/MYSQL_DATABASE
-      MYSQL_USER__FILE: /run/secrets/MYSQL_USER
-      MYSQL_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
     expose:
