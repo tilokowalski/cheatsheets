@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    image: portainer/portainer-ee:2.19.4
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data:/data
+    expose:
+      - 9443
+    networks:
+      - frontnet
+
+# Set 'external' to 'false' for volumes and networks, if they don't already exist
+
+volumes:
+  data:
+    name: portainer_data
+    external: true
+
+networks:
+  frontnet:
+    external: true
+

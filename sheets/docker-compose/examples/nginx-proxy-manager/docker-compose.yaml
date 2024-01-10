@@ -1,0 +1,90 @@
+version: '3.8'
+
+# Create a '.secrets' directory with these files relative to this compose file to make use of the following secrets
+
+secrets:
+  MYSQL_ROOT_PASSWORD:
+    file: .secrets/mysql_root_password.txt
+  MYSQL_DATABASE:
+    file: .secrets/mysql_database.txt
+  MYSQL_USER:
+    file: .secrets/mysql_user.txt
+  MYSQL_PASSWORD:
+    file: .secrets/mysql_password.txt
+
+services:
+  app:
+    image: jc21/nginx-proxy-manager:latest
+    privileged: true
+    container_name: nginx-proxy-manager-app
+    restart: unless-stopped
+    secrets:
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    environment:
+      DB_MYSQL_HOST: nginx-proxy-manager-db
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_NAME__FILE: /run/secrets/MYSQL_DATABASE
+      DB_MYSQL_USER__FILE: /run/secrets/MYSQL_USER
+      DB_MYSQL_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+    volumes:
+      - app_data:/data
+      - letsencrypt_data:/etc/letsencrypt
+      - /etc/docker/nginx-proxy-manager:/data/nginx/custom
+    ports:
+      - 80:80
+      - 443:443
+      # Admin Dashboard Port, remove after setting up a corresponding host and exposing it instead
+      - 81:81
+    networks:
+      - frontnet
+      - backnet
+    healthcheck:
+      test: [ "CMD", "/bin/check-health" ]
+      interval: 10s
+      timeout: 3s
+    depends_on:
+      - db
+
+  db:
+    image: jc21/mariadb-aria:latest
+    container_name: nginx-proxy-manager-db
+    restart: unless-stopped
+    secrets:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    environment:
+      MYSQL_ROOT_PASSWORD__FILE: /run/secrets/MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE__FILE: /run/secrets/MYSQL_DATABASE
+      MYSQL_USER__FILE: /run/secrets/MYSQL_USER
+      MYSQL_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
+    volumes:
+      - db_data:/var/lib/mysql
+    expose:
+      - 3306
+    networks:
+      - backnet
+
+# Set 'external' to 'false' for volumes and networks, if they don't already exist
+
+volumes:
+  app_data:
+    name: nginx-proxy-manager_app_data
+    external: true
+  letsencrypt_data:
+    name: nginx-proxy-manager_letsencrypt_data
+    external: true
+  db_data:
+    name: nginx-proxy-manager_db_data
+    external: true
+
+networks:
+  frontnet:
+    name: frontnet
+    external: true
+  backnet:
+    name: backnet
+    external: true
