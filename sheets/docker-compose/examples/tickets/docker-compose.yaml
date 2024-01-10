@@ -58,10 +58,10 @@ services:
 volumes:
   db_data:
     name: tickets_db_data
-    external: false
+    external: true
 
 networks:
   frontnet:
-    external: false
+    external: true
   backnet:
-    external: false
+    external: true
