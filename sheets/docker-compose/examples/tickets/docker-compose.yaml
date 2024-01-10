@@ -23,7 +23,6 @@ services:
       APP_LOG_LEVEL: info
       APP_PROFILE: prod
       APP_DB_HOST: tickets-db
-      APP_DB_PORT: 3306
       APP_DB_NAME__FILE: /run/secrets/MYSQL_DATABASE
       APP_DB_USER__FILE: /run/secrets/MYSQL_USER
       APP_DB_PASSWORD__FILE: /run/secrets/MYSQL_PASSWORD
@@ -55,6 +54,11 @@ services:
       - 3306
     networks:
       - backnet
+
+volumes:
+  db_data:
+    name: tickets_db_data
+    external: false
 
 networks:
   frontnet:
