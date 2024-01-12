@@ -9,9 +9,9 @@ services:
     environment:
       DB_MYSQL_HOST: nginx-proxy-manager-db
       DB_MYSQL_PORT: 3306
-      DB_MYSQL_NAME: ${MYSQL_DATABASE}
-      DB_MYSQL_USER: ${MYSQL_USER}
-      DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DB_MYSQL_NAME: ${NGINX_PM_DB_DATABASE}
+      DB_MYSQL_USER: ${NGINX_PM_DB_USER}
+      DB_MYSQL_PASSWORD: ${NGINX_PM_DB_PASSWORD}
     volumes:
       - app_data:/data
       - letsencrypt_data:/etc/letsencrypt
@@ -36,10 +36,10 @@ services:
     container_name: nginx-proxy-manager-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${NGINX_PM_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${NGINX_PM_DB_DATABASE}
+      MYSQL_USER: ${NGINX_PM_DB_USER}
+      MYSQL_PASSWORD: ${NGINX_PM_DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
     expose:
