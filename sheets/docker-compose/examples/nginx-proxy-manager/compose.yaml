@@ -15,12 +15,12 @@ services:
     volumes:
       - app_data:/data
       - letsencrypt_data:/etc/letsencrypt
-      - /etc/docker/nginx-proxy-manager:/data/nginx/custom
+      # - /etc/docker/nginx-proxy-manager:/data/nginx/custom
     ports:
       - 80:80
       - 443:443
-      # Admin Dashboard Port, remove after setting up a corresponding host and exposing it instead
-      - 81:81
+    expose:
+      - 81
     networks:
       - frontnet
       - backnet
@@ -46,8 +46,6 @@ services:
       - 3306
     networks:
       - backnet
-
-# Set 'external' to 'false' for volumes and networks, if they don't already exist
 
 volumes:
   app_data:

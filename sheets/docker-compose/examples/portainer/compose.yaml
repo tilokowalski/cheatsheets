@@ -16,8 +16,6 @@ services:
     networks:
       - frontnet
 
-# Set 'external' to 'false' for volumes and networks, if they don't already exist
-
 volumes:
   data:
     name: portainer_data
