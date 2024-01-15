@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     image: portainer/portainer-ee:2.19.4
-    container_name: portainer-ee
+    container_name: portainer-ee-app
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true

@@ -32,7 +32,7 @@ services:
       - db
 
   db:
-    image: jc21/mariadb-aria:latest
+    image: jc21/mariadb-aria:10.11.5
     container_name: nginx-proxy-manager-db
     restart: unless-stopped
     environment:
