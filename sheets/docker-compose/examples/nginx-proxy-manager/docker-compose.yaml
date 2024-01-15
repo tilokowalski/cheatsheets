@@ -2,20 +2,20 @@ version: '3.8'
 
 services:
   app:
-    image: jc21/nginx-proxy-manager:latest
-    privileged: true
+    image: jc21/nginx-proxy-manager:2.10.4
     container_name: nginx-proxy-manager-app
     restart: unless-stopped
+    privileged: true
     environment:
-      DB_MYSQL_HOST: nginx-proxy-manager-db
-      DB_MYSQL_PORT: 3306
+      DB_MYSQL_HOST: ${NGINX_PM_DB_HOST:-nginx-proxy-manager-db}
+      DB_MYSQL_PORT: ${NGINX_PM_DB_PORT:-3306}
       DB_MYSQL_NAME: ${NGINX_PM_DB_DATABASE}
       DB_MYSQL_USER: ${NGINX_PM_DB_USER}
       DB_MYSQL_PASSWORD: ${NGINX_PM_DB_PASSWORD}
     volumes:
-      - app_data:/data
-      - letsencrypt_data:/etc/letsencrypt
-      # - /etc/docker/nginx-proxy-manager:/data/nginx/custom
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/nginx-proxy-manager/data:/data
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/nginx-proxy-manager/letsencrypt:/etc/letsencrypt
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/nginx-proxy-manager/config:/data/nginx/custom
     ports:
       - 80:80
       - 443:443
@@ -41,22 +41,11 @@ services:
       MYSQL_USER: ${NGINX_PM_DB_USER}
       MYSQL_PASSWORD: ${NGINX_PM_DB_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/nginx-proxy-manager/mysql:/var/lib/mysql
     expose:
       - 3306
     networks:
       - backnet
-
-volumes:
-  app_data:
-    name: nginx-proxy-manager_app_data
-    external: true
-  letsencrypt_data:
-    name: nginx-proxy-manager_letsencrypt_data
-    external: true
-  db_data:
-    name: nginx-proxy-manager_db_data
-    external: true
 
 networks:
   frontnet:

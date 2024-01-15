@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: monitoring-grafana
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    restart: unless-stopped
+    expose:
+      - 3000
+    volumes:
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/grafana:/var/lib/grafana
+    networks:
+      - frontnet
+      - backnet
+
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: monitoring-prometheus
+    restart: unless-stopped
+    expose:
+      - 9090
+    volumes:
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/prometheus/config:/etc/prometheus
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/prometheus/data:/prometheus
+    networks:
+      - frontnet
+      - backnet
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: monitoring-cadvisor
+    expose:
+      - 8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - redis
+    networks:
+      - backnet
+
+  redis:
+    image: redis:7.2.4
+    container_name: monitoring-redis
+    volumes:
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/redis:/data
+    expose:
+      - 6379
+    networks:
+      - backnet
+
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: monitoring-loki
+    expose:
+      - 3100
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/loki/config:/etc/loki
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/loki/data:/loki
+    networks:
+      - backnet
+
+  promtail:
+    image: grafana/promtail:2.9.3
+    container_name: monitoring-promtail
+    volumes:
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/promtail/config:/etc/promtail
+      - ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/monitoring/nginx-proxy-manager/data/logs:/var/log
+    networks:
+      - backnet
+
+networks:
+  frontnet:
+    external: true
+  backnet:
+    external: true
